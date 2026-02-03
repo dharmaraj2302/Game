@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Anime Valentine Boss Fight</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Will You Be My Valentine?</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -13,7 +13,7 @@
 body {
   margin: 0;
   height: 100vh;
-  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  background: radial-gradient(circle, #ff9a9e, #ff4d6d);
   font-family: 'Press Start 2P', cursive;
   overflow: hidden;
   display: flex;
@@ -21,37 +21,45 @@ body {
   justify-content: center;
 }
 
+/* ---------- GAME ---------- */
+
 .container {
-  text-align: center;
   width: 100%;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
 }
 
 h1 {
-  font-size: 1.1rem;
   color: white;
-  text-shadow: 0 0 10px hotpink;
+  font-size: 1.1rem;
+  text-shadow: 0 0 12px hotpink;
 }
 
 .score {
-  color: #fff;
   font-size: 0.6rem;
-  margin-bottom: 10px;
+  color: #fff;
+  margin-bottom: 8px;
 }
 
 .chibi {
   font-size: 4rem;
   margin: 10px 0;
-  animation: bounce 1s infinite alternate;
+  animation: bounce 0.9s infinite alternate;
 }
 
 .buttons {
   position: relative;
-  height: 260px;
+  height: 280px;
 }
+
+/* ---------- BUTTONS ---------- */
 
 button {
   border: none;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 18px 32px;
   font-size: 0.75rem;
   cursor: pointer;
@@ -60,30 +68,30 @@ button {
 }
 
 #yesBtn {
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
   background: radial-gradient(circle, #ff4d6d, #ff0033);
   color: white;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 150px;
   box-shadow: 0 0 20px #ff4d6d;
 }
 
 #yesBtn.boss {
   animation: bossPulse 0.6s infinite alternate;
   font-size: 1rem;
-  padding: 25px 45px;
-  box-shadow: 0 0 40px red;
+  padding: 26px 46px;
+  box-shadow: 0 0 45px red;
 }
 
 #noBtn {
+  left: 50%;
+  top: 60px;
+  transform: translateX(-50%);
   background: #222;
   color: white;
-  left: 50%;
-  top: 80px;
-  transform: translateX(-50%);
 }
 
-.hidden { display: none; }
+/* ---------- ENDING ---------- */
 
 .celebration {
   position: fixed;
@@ -102,6 +110,8 @@ button {
   font-size: 2rem;
   animation: rain 0.8s infinite linear;
 }
+
+/* ---------- ANIMATIONS ---------- */
 
 @keyframes bounce {
   from { transform: scale(1); }
@@ -127,6 +137,7 @@ button {
 
 <body>
 
+<!-- GAME -->
 <div class="container" id="game">
   <div class="score" id="score">NO attempts: 0</div>
   <div class="chibi" id="chibi">🥺</div>
@@ -138,57 +149,68 @@ button {
   </div>
 </div>
 
+<!-- CELEBRATION -->
 <div class="celebration hidden" id="celebration">
   <h1>VICTORY!!! 💘</h1>
-  <p>You defeated the YES boss 😳💕</p>
+  <p>You defeated the YES boss 😳💖</p>
   <div class="hearts">💖 💕 💗 💘 💞</div>
 </div>
 
 <script>
+/* ---------- HARD RESET (CRITICAL) ---------- */
+const game = document.getElementById("game");
+const celebration = document.getElementById("celebration");
+game.classList.remove("hidden");
+celebration.classList.add("hidden");
+
+/* ---------- ELEMENTS ---------- */
 const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
 const chibi = document.getElementById("chibi");
 const scoreText = document.getElementById("score");
-const game = document.getElementById("game");
-const celebration = document.getElementById("celebration");
 
+/* ---------- STATE ---------- */
 let attempts = 0;
 let scale = 1;
+let victoryUnlocked = false;
 
-const chibiFaces = ["🥺", "😳", "😠", "😡", "👹"];
+const faces = ["🥺", "😳", "😠", "😡", "👹"];
 
-function dodgeNo() {
+/* ---------- NO BUTTON ---------- */
+function handleNoAttempt() {
   attempts++;
   scoreText.textContent = `NO attempts: ${attempts}`;
+  chibi.textContent = faces[Math.min(attempts, faces.length - 1)];
 
-  chibi.textContent = chibiFaces[Math.min(attempts, chibiFaces.length - 1)];
-
-  // Move NO randomly
-  const x = Math.random() * (window.innerWidth - 100);
-  const y = Math.random() * (window.innerHeight - 200);
-  noBtn.style.left = x + "px";
-  noBtn.style.top = y + "px";
-
-  // Shrink NO
-  scale -= 0.1;
-  if (scale < 0.3) scale = 0.3;
+  // Shrink
+  scale = Math.max(0.3, scale - 0.1);
   noBtn.style.transform = `scale(${scale})`;
 
-  // YES becomes final boss
+  // Move inside screen safely
+  const maxX = window.innerWidth - 120;
+  const maxY = window.innerHeight - 220;
+  noBtn.style.left = Math.random() * maxX + "px";
+  noBtn.style.top = Math.random() * maxY + "px";
+
+  // Unlock boss
   if (attempts >= 3) {
     yesBtn.classList.add("boss");
     yesBtn.textContent = "FINAL YES 💥";
+    victoryUnlocked = true;
   }
 }
 
-// Desktop + Mobile
-noBtn.addEventListener("mouseover", dodgeNo);
+noBtn.addEventListener("mouseover", handleNoAttempt);
 noBtn.addEventListener("touchstart", (e) => {
   e.preventDefault();
-  dodgeNo();
+  handleNoAttempt();
 });
 
-yesBtn.addEventListener("click", () => {
+/* ---------- YES BUTTON ---------- */
+yesBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!victoryUnlocked) return; // fake click protection
+
   game.classList.add("hidden");
   celebration.classList.remove("hidden");
 });
